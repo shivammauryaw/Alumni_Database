@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Alumni Database</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --hover-color: #2e59d9;
+            --light-bg: #f8f9fc;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .header {
+            background-color: white;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+        
+        .table-container {
+            background-color: white;
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+            padding: 1.5rem;
+        }
+        
+        .table thead th {
+            border-bottom-width: 1px;
+            font-weight: 600;
+            color: #4e73df;
+            background-color: #f8f9fc;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(78, 115, 223, 0.05);
+        }
+        
+        .btn-action {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 0.2rem;
+        }
+        
+        .empty-state {
+            background-color: white;
+            padding: 3rem;
+            border-radius: 0.35rem;
+            text-align: center;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        }
+        
+        .floating-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.3);
+            z-index: 1000;
+        }
+        
+        .filter-container {
+            margin: 1rem 0;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <div class="header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0 text-gray-800">
+                    <i class="fas fa-user-graduate me-2 text-primary"></i>
+                    Alumni Database
+                </h1>
+                <div>
+                    <span class="badge bg-primary">
+                        <span th:text="${alumniList.size()}"></span> Records
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Alumni Table -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2 class="h4 text-gray-800 mb-0">Alumni List</h2>
+                <a th:href="@{/addAlumni}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i> Add New
+                </a>
+            </div>
+            
+			<div class="filter-container">
+			    <form th:action="@{/}" method="get" class="row g-3 align-items-end">
+			        <div class="col-md-4 col-sm-6">
+			            <label for="batchFilter" class="form-label small text-muted">Filter by Batch</label>
+			            <select name="batch" id="batchFilter" class="form-select form-select-sm">
+			                <option value="">All Batches</option>
+			                <option th:each="batch : ${batches}"
+			                        th:value="${batch}"
+			                        th:text="${batch}"
+			                        th:selected="${selectedBatch == batch}"></option>
+			            </select>
+			        </div>
+
+			        <div class="col-auto">
+			            <button type="submit" class="btn btn-sm btn-outline-primary">
+			                <i class="fas fa-filter me-1"></i> Apply
+			            </button>
+			        </div>
+
+			        <div class="col-auto" th:if="${selectedBatch != null}">
+			            <a th:href="@{/}" class="btn btn-sm btn-outline-secondary">
+			                <i class="fas fa-times me-1"></i> Clear Filter
+			            </a>
+			        </div>
+			    </form>
+			</div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Batch</th>
+                            <th>Company</th>
+                            <th>Contact</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="alumni : ${alumniList}">
+                            <td th:text="${alumni.id}"></td>
+                            <td th:text="${alumni.name}"></td>
+                            <td>
+                                <span class="badge bg-light text-dark" th:text="${alumni.batch}"></span>
+                            </td>
+                            <td th:text="${alumni.company} ?: '-'"></td>
+                            <td th:text="${alumni.contact} ?: '-'"></td>
+                            <td>
+                                <div class="d-flex">
+                                    <a th:href="@{/alumni/{id}(id=${alumni.id})}" 
+                                       class="btn btn-info btn-action me-1"
+                                       title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a th:href="@{/showFormUpdate/{id}(id=${alumni.id})}" 
+                                       class="btn btn-warning btn-action me-1"
+                                       title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a th:href="@{/deleteAlumni/{id}(id=${alumni.id})}" 
+                                       class="btn btn-danger btn-action"
+                                       title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${alumniList.empty}" class="empty-state mt-4">
+            <i class="fas fa-user-friends fa-3x mb-3 text-gray-400"></i>
+            <h3 class="h4 text-gray-800">No alumni records found</h3>
+            <p class="text-gray-600">Start by adding new alumni to the directory</p>
+            <a th:href="@{/addAlumni}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Add Alumni
+            </a>
+        </div>
+    </div>
+
+    <!-- Floating Add Button (for mobile) -->
+    <a th:href="@{/addAlumni}" class="btn btn-primary floating-btn d-lg-none d-flex align-items-center justify-content-center">
+        <i class="fas fa-plus"></i>
+    </a>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
